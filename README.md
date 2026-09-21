@@ -180,6 +180,3 @@ LIMIT 5;
 
 ---
 
-## Licença
-
-MIT
