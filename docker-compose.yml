@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: dataflow_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dataflow_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dataflow_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-dataflow_db}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dataflow_user} -d ${POSTGRES_DB:-dataflow_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  etl_pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dataflow_etl
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-dataflow_db}
+      DB_USER: ${POSTGRES_USER:-dataflow_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-dataflow_secret}
+      RAW_DATA_PATH: /app/data/raw
+      PROCESSED_DATA_PATH: /app/data/processed
+      REPORTS_PATH: /app/data/reports
+    volumes:
+      - ./data:/app/data
+      - ./src_python:/app/src
+    command: ["python", "main.py", "--full-run"]
+
+volumes:
+  postgres_data:
+    driver: local
