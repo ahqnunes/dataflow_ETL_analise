@@ -131,43 +131,6 @@ As tabelas se ligam por chaves estrangeiras, e há regras de validação (`CHECK
 
 ---
 
-## Exemplos de consulta
-
-**Faturamento por mês, com variação em relação ao mês anterior**
-
-```sql
-SELECT
-    TO_CHAR(v.data_venda, 'YYYY-MM') AS mes,
-    SUM(v.faturamento_total) AS faturamento_atual,
-    LAG(SUM(v.faturamento_total), 1) OVER (ORDER BY TO_CHAR(v.data_venda, 'YYYY-MM')) AS faturamento_anterior,
-    ROUND(
-        ((SUM(v.faturamento_total) - LAG(SUM(v.faturamento_total), 1) OVER (ORDER BY TO_CHAR(v.data_venda, 'YYYY-MM'))) /
-        NULLIF(LAG(SUM(v.faturamento_total), 1) OVER (ORDER BY TO_CHAR(v.data_venda, 'YYYY-MM')), 0)) * 100, 2
-    ) AS variacao_mom_pct
-FROM vendas v
-WHERE v.status_pagamento = 'Aprovado'
-GROUP BY TO_CHAR(v.data_venda, 'YYYY-MM')
-ORDER BY mes ASC;
-```
-
-**Cinco produtos mais lucrativos**
-
-```sql
-SELECT
-    p.nome AS produto,
-    SUM(v.faturamento_total) AS faturamento,
-    SUM(v.lucro_bruto) AS lucro_total,
-    DENSE_RANK() OVER (ORDER BY SUM(v.lucro_bruto) DESC) AS rank_lucro
-FROM produtos p
-JOIN vendas v ON p.id_produto = v.id_produto
-WHERE v.status_pagamento = 'Aprovado'
-GROUP BY p.nome
-ORDER BY rank_lucro ASC
-LIMIT 5;
-```
-
----
-
 ## Tecnologias
 
 | Área | Ferramentas |
