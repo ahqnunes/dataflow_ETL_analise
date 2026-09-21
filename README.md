@@ -4,8 +4,7 @@ Pipeline de engenharia de dados de ponta a ponta, com um painel web para acompan
 
 Os dados de vendas chegam sujos (datas em vários formatos, valores com `R$` e vírgula, campos vazios, registros repetidos). O projeto lê esses dados, limpa, guarda em um banco PostgreSQL, responde perguntas de negócio com SQL e mostra tudo em um painel.
 
-<!-- Adicione aqui um print do painel: ![Painel](docs/painel.png) -->
-
+   ![Painel do DataFlow](docs/painel.png)
 ---
 
 ## O que o projeto faz
